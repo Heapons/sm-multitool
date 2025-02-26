@@ -21,10 +21,10 @@
 
 //Defines
 #define PLUGIN_NAME "[SM] Multitool"
-#define PLUGIN_AUTHOR "KeithGDR"
+#define PLUGIN_AUTHOR "KeithGDR (Edited by Heapons)"
 #define PLUGIN_DESCRIPTION "A very large and bloated plugin that consists of tools via commands and code to make managing servers and developing plugins easy."
-#define PLUGIN_VERSION "1.1.6"
-#define PLUGIN_URL "https://github.com/KeithGDR/sm-multitool"
+#define PLUGIN_VERSION "1.1.7"
+#define PLUGIN_URL "https://github.com/Heapons/sm-multitool"
 
 #define TAG "[Tools]"
 
@@ -244,6 +244,8 @@ public void OnPluginStart() {
 	RegAdminCmd("sm_tools", Command_Tools, ADMFLAG_SLAY, "List available commands under server tools.");
 	RegAdminCmd2("sm_restart", Command_Restart, ADMFLAG_ROOT, "Restart the server.");
 	RegAdminCmd2("sm_quit", Command_Quit, ADMFLAG_ROOT, "Quit the server.");
+	RegAdminCmd2("sm_forcerestart", Command_ForceRestart, ADMFLAG_ROOT, "Forcefully restart the server.");
+	RegAdminCmd2("sm_forcequit", Command_ForceQuit, ADMFLAG_ROOT, "Forcefully quit the server.");
 	RegAdminCmd2("sm_goto", Command_Teleport, ADMFLAG_SLAY, "Teleports yourself to other clients.");
 	RegAdminCmd("sm_tele", Command_Teleport, ADMFLAG_SLAY, "Teleports yourself to other clients.");
 	RegAdminCmd("sm_teleport", Command_Teleport, ADMFLAG_SLAY, "Teleports yourself to other clients.");
@@ -276,6 +278,7 @@ public void OnPluginStart() {
 	RegAdminCmd2("sm_password", Command_Password, ADMFLAG_ROOT, "Set a password on the server or remove it.");
 	RegAdminCmd("sm_setpassword", Command_Password, ADMFLAG_ROOT, "Set a password on the server or remove it.");
 	RegAdminCmd2("sm_endround", Command_EndRound, ADMFLAG_ROOT, "Ends the current round.");
+	RegAdminCmd2("sm_win", Command_WinRound, ADMFLAG_ROOT, "Makes your team the round winner.");
 	RegAdminCmd2("sm_settime", Command_SetTime, ADMFLAG_SLAY, "Sets time on the server.");
 	RegAdminCmd2("sm_addtime", Command_AddTime, ADMFLAG_SLAY, "Adds time on the server.");
 	RegAdminCmd2("sm_removetime", Command_RemoveTime, ADMFLAG_SLAY, "Remove time on the server.");
@@ -340,8 +343,8 @@ public void OnPluginStart() {
 	RegAdminCmd2("sm_regen", Command_Regenerate, ADMFLAG_SLAY, "Regenerate yourself or clients.");
 	RegAdminCmd("sm_regenerate", Command_Regenerate, ADMFLAG_SLAY, "Regenerate yourself or clients.");
 	RegAdminCmd2("sm_setcondition", Command_SetCondition, ADMFLAG_ROOT, "Sets a condition on yourself or other clients.");
-	RegAdminCmd("sm_addcondition", Command_SetCondition, ADMFLAG_ROOT, "Adds a condition on yourself or other clients.");
-	RegAdminCmd2("sm_removecondition", Command_RemoveCondition, ADMFLAG_ROOT, "Removes a condition from yourself or other clients.");
+	RegAdminCmd("sm_addcond", Command_SetCondition, ADMFLAG_ROOT, "Adds a condition on yourself or other clients.");
+	RegAdminCmd2("sm_removecond", Command_RemoveCondition, ADMFLAG_ROOT, "Removes a condition from yourself or other clients.");
 	RegAdminCmd("sm_stripcondition", Command_RemoveCondition, ADMFLAG_ROOT, "Removes a condition from yourself or other clients.");
 	RegAdminCmd2("sm_spewconditions", Command_SpewConditions, ADMFLAG_ROOT, "Logs all conditions applied into chat.");
 	RegAdminCmd2("sm_uber", Command_SetUbercharge, ADMFLAG_SLAY, "Sets ubercharge on yourself or other clients.");
@@ -363,6 +366,7 @@ public void OnPluginStart() {
 	RegAdminCmd("sm_addcrits", Command_SetCrits, ADMFLAG_SLAY, "Adds crits on yourself or other clients.");
 	RegAdminCmd2("sm_removecrits", Command_RemoveCrits, ADMFLAG_SLAY, "Removes crits from yourself or other clients.");
 	RegAdminCmd("sm_stripcrits", Command_RemoveCrits, ADMFLAG_SLAY, "Removes crits from yourself or other clients.");
+	RegAdminCmd("sm_setgoalstring", Command_SetGoalString, ADMFLAG_SLAY, "The goal string to display on round start.");
 
 	//left4dead2
 	RegAdminCmd2("sm_common", Command_SpawnCommon, ADMFLAG_SLAY, "Spawns a common infected where you're looking.");
@@ -574,6 +578,13 @@ public Action Timer_CheckLoad(Handle timer, DataPack pack) {
 }
 
 public void OnMapStart() {
+	//Team Goal String entities
+	gamerules = FindEntityByClassname(-1, "tf_gamerules");
+	if(gamerules==-1) {
+		gamerules = CreateEntityByName("tf_gamerules");
+	}
+
+	//Precaching
 	PrecacheSound("ui/cyoa_map_open.wav");
 	
 	delete g_OwnedEntities[0];
@@ -638,6 +649,15 @@ bool IsEnabled() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Commands
 
+public Action Command_SetGoalString(const char[] goal) {
+	SetVariantString(goal);
+	
+	AcceptEntityInput(gamerules, "SetRedTeamGoalString");
+	AcceptEntityInput(gamerules, "SetBlueTeamGoalString");
+
+	return Plugin_Handled;
+}
+
 public Action Command_SilentNoclip(int client, int args) {
 	if (!IsEnabled()) {
 		return Plugin_Continue;
@@ -694,6 +714,16 @@ void ListCommands(int client) {
 public int PanelHandler_Commands(Menu menu, MenuAction action, int param1, int param2) {
 	delete menu;
 	return 0;
+}
+
+public Action Command_ForceRestart(int client, int args) {
+	Confirm_Restart(client, Confirm_Yes);
+	return Plugin_Continue;
+}
+
+public Action Command_ForceQuit(int client, int args) {
+	Confirm_Quit(client, Confirm_Yes);
+	return Plugin_Continue;
 }
 
 public Action Command_Restart(int client, int args) {
@@ -1789,6 +1819,45 @@ public Action Command_EndRound(int client, int args) {
 	}
 	
 	SendPrintToAll("[H]%N [D]has ended the current round.", client);
+	return Plugin_Handled;
+}
+
+public Action Command_WinRound(int client, int args) {
+	if (!IsEnabled()) {
+		return Plugin_Continue;
+	}
+
+	switch (game) {
+		case Engine_TF2: {
+			TFTeam team = GetClientTeam(client);
+
+			if (args > 0) {
+				team = view_as<TFTeam>(GetCmdArgInt(1));
+			}
+
+			TF2_ForceRoundWin(team);
+			TF2_ForceWin(team);
+		}
+		case Engine_CSGO, Engine_CSS: {
+			float delay;
+			CSRoundEndReason reason = CSRoundEnd_Draw;
+			bool blockhook = true;
+			
+			if (args >= 1) {
+				delay = GetCmdArgFloat(1);
+			}
+			if (args >= 2) {
+				reason = view_as<CSRoundEndReason>(GetCmdArgInt(2));
+			}
+			if (args >= 3) {
+				blockhook = GetCmdArgBool(3);
+			}
+			
+			CS_TerminateRound(delay, reason, blockhook);
+		}
+	}
+	
+	SendPrintToAll("[H]%N [D]has won the current round.", client);
 	return Plugin_Handled;
 }
 
