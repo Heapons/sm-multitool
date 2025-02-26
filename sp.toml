@@ -1,2 +1,6 @@
 [Compile]
 "plugins" = ["sm-multitool"]
+
+[[depedency]]
+url = "https://github.com/Heapons/sm-multitool/tree/main/scripting/include"
+path = "."
