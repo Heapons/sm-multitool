@@ -366,7 +366,6 @@ public void OnPluginStart() {
 	RegAdminCmd("sm_addcrits", Command_SetCrits, ADMFLAG_SLAY, "Adds crits on yourself or other clients.");
 	RegAdminCmd2("sm_removecrits", Command_RemoveCrits, ADMFLAG_SLAY, "Removes crits from yourself or other clients.");
 	RegAdminCmd("sm_stripcrits", Command_RemoveCrits, ADMFLAG_SLAY, "Removes crits from yourself or other clients.");
-	RegAdminCmd("sm_setgoalstring", Command_SetGoalString, ADMFLAG_SLAY, "The goal string to display on round start.");
 
 	//left4dead2
 	RegAdminCmd2("sm_common", Command_SpawnCommon, ADMFLAG_SLAY, "Spawns a common infected where you're looking.");
@@ -578,13 +577,6 @@ public Action Timer_CheckLoad(Handle timer, DataPack pack) {
 }
 
 public void OnMapStart() {
-	//Team Goal String entities
-	gamerules = FindEntityByClassname(-1, "tf_gamerules");
-	if(gamerules==-1) {
-		gamerules = CreateEntityByName("tf_gamerules");
-	}
-
-	//Precaching
 	PrecacheSound("ui/cyoa_map_open.wav");
 	
 	delete g_OwnedEntities[0];
@@ -648,15 +640,6 @@ bool IsEnabled() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Commands
-
-public Action Command_SetGoalString(const char[] goal) {
-	SetVariantString(goal);
-	
-	AcceptEntityInput(gamerules, "SetRedTeamGoalString");
-	AcceptEntityInput(gamerules, "SetBlueTeamGoalString");
-
-	return Plugin_Handled;
-}
 
 public Action Command_SilentNoclip(int client, int args) {
 	if (!IsEnabled()) {
