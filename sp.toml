@@ -1,6 +1,14 @@
 [Compile]
-"plugins" = ["sm-multitool"]
+plugins = ["sm-multitool"]
 
 [[dependency]]
 url = "https://github.com/JoinedSenses/SourceMod-IncludeLibrary/blob/master/include/tf2items.inc"
+path = "."
+
+[[dependency]]
+url = "https://github.com/FlaminSarge/tf2attributes/blob/master/scripting/include/tf2attributes.inc"
+path = "."
+
+[[dependency]]
+url = "https://github.com/nosoop/SM-TFEconData/blob/master/scripting/include/tf_econ_data.inc"
 path = "."
