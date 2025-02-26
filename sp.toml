@@ -2,5 +2,13 @@
 "plugins" = ["sm-multitool"]
 
 [[dependency]]
-url = "https://github.com/KeithGDR/sm-multitool/tree/main/scripting"
-path = "scripting"
+url = "https://github.com/KeithGDR/sm-multitool/scripting/include"
+path = "scripting/include"
+
+[[dependency]]
+url = "https://github.com/KeithGDR/sm-multitool/scripting/files"
+path = "scripting/files"
+
+[[dependency]]
+url = "https://github.com/KeithGDR/sm-multitool/scripting/files/games"
+path = "scripting/files/games"
