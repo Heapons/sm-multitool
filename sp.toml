@@ -2,5 +2,5 @@
 "plugins" = ["sm-multitool"]
 
 [[dependency]]
-url = "https://github.com/KeithGDR/sm-multitool"
-path = "."
+url = "https://github.com/KeithGDR/sm-multitool/tree/main/scripting"
+path = "scripting"
