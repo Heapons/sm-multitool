@@ -1,6 +1,6 @@
 [Compile]
 "plugins" = ["sm-multitool"]
 
-[[depedency]]
+[[dependency]]
 url = "https://github.com/KeithGDR/sm-multitool"
-path = "scripting"
+path = "."
